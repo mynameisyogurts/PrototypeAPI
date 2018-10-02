@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>Our simple HTTP server</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous"><link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    
+  <link rel="stylesheet" type="text/css" href="/style.css">
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-core/5.8.34/browser.min.js"></script>
+  <script type="text/babel">
+    // Parses the JSON response coming user object made in jsonResponses
+    const parseJSON = (xhr, content) => {
+      const obj = JSON.parse(xhr.response);
+      console.dir(obj);
+      
+        // If the object has a message, then append it to the content
+      if(obj.message) {
+        const p = document.createElement('p');
+        p.textContent = `Message: ${obj.message}`;
+        content.appendChild(p);
+      }
+      
+        // If the object has a list of users, append it to the content
+      if(obj.ideas) {
+        const userList = document.createElement('p');
+        const users = JSON.stringify(obj.ideas);
+        userList.textContent = users;
+        content.appendChild(userList);
+          /*
+          var string = "<div class='grid'>";
+          
+          obj.ideas.forEach (function(idea) {
+              var iDea = idea.idea;
+              var cate = idea.category;
+              
+              string += "<div class='card'>";
+              string += "<h3>" + idea + "</h3>";
+              string += "<br>" + category;
+              string += "</div>";
+          });
+          
+          string += "</div>"
+          document.querySelector('#content').innerHTML = string;
+          */
+      }
+    };
+
+    // Function that handles status responses
+    const handleResponse = (xhr) => {
+          const content = document.querySelector('#content');
+          switch(xhr.status) {
+            case 200: 
+              content.innerHTML = `<b>Success</b>`;
+              break;
+            case 201:
+              content.innerHTML = '<b>Create</b>';
+              break;
+            case 204: 
+              content.innerHTML = '<b>Updated (No Content)</b>';
+              return;
+            case 400:
+              content.innerHTML = `<b>Bad Request</b>`;
+              break;
+            default: 
+              content.innerHTML = `Error code not implemented by client.`;
+              break;
+          }
+        
+            parseJSON(xhr, content);
+    };
+
+    const sendPost = (e, nameForm) => {
+      const ideaAction = ideaForm.getAttribute('action');
+      const ideaMethod = ideaForm.getAttribute('method');
+      
+      const ideaField = ideaForm.querySelector('#nameField');
+      const categoryField = ideaForm.querySelector('#ideaField');
+        const descriptionField = ideaForm.querySelector('#descField');
+      
+      const xhr = new XMLHttpRequest();
+      xhr.open(ideaMethod, ideaAction);
+      
+      xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
+      xhr.setRequestHeader ('Accept', 'application/json');
+      
+      xhr.onload = () => handleResponse(xhr);
+      
+      const formData = `idea=${ideaField.value}&category=${categoryField.value}&description=${descriptionField.value}`;
+      
+      xhr.send(formData);
+    
+      e.preventDefault();
+      return false;
+    };
+
+    const sendGet = (e, userForm) => {
+        
+        const ideaAction = inputForm.getAttribute('action');
+      const ideaMethod = inputForm.getAttribute('method');
+
+        const xhr = new XMLHttpRequest();
+        xhr.open(ideaMethod, ideaAction);
+        
+        xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
+      xhr.setRequestHeader ('Accept', 'application/json');
+        xhr.onload = () => handleResponse(xhr);
+        xhr.send();
+        e.preventDefault();
+        return false;
+    };
+
+    const init = () => {
+      const ideaForm = document.querySelector('#ideaForm');
+        const inputForm = document.querySelector('#inputForm');
+      
+      const addIdea = (e) => sendPost(e, ideaForm);
+        const getIdeas = (e) => sendGet(e, inputForm);
+      
+      ideaForm.addEventListener('submit', addIdea);
+        inputForm.addEventListener('submit', getIdeas);
+    };
+
+    window.onload = init;
+
+  </script>
+    <meta charset="utf-8">
+</head>
+<body>
+  <section id="top">
+    <h3>JOTDOWN</h3>
+      <br>
+    <form id="ideaForm" action="/addIdea" method="post">
+      <label for="name">Idea: </label>
+      <input id="nameField" type="text" name="idea" />
+        <br>
+      <label for="category">Category: </label>
+        <input id="ideaField" type="text" name="category" />
+        <br>
+        <label for="description">Description: </label>
+        <br>
+        <input id="descField" type="text" name="description" />
+        <br>
+        <label for="image">Image URL: </label>
+        <input id="imgField" type="text" name="image" />
+        <br>
+        <label for="video">YouTube Link: </label>
+        <input id="vidField" type="text" name="video" />
+        <br>
+      <input type="submit" value="Add Idea" />
+    </form>
+      <br>
+    <form id="inputForm" action="/getIdeas" method="get">
+      <input type="submit" value="Click to see your ideas!" />
+    </form>
+  </section>
+  <section id="content">
+  </section>
+</body>
+</html>
