@@ -1,11 +1,17 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <title>Our simple HTTP server</title>
+  <title>JotDown</title>
+    <!-- Comfortaa font from Google Fonts -->
+    <link href="https://fonts.googleapis.com/css?family=Comfortaa" rel="stylesheet">
+    
+    <!-- Bootstrap of cours -->
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous"><link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
     
+    <!-- Linking to css file -->
   <link rel="stylesheet" type="text/css" href="/style.css">
   
+    <!-- AJAX and Babel that creates ideas -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-core/5.8.34/browser.min.js"></script>
   <script type="text/babel">
     // Parses the JSON response coming user object made in jsonResponses
@@ -13,35 +19,51 @@
       const obj = JSON.parse(xhr.response);
       console.dir(obj);
       
-        // If the object has a message, then append it to the content
+        // If the object has a message, then add it to the content
       if(obj.message) {
         const p = document.createElement('p');
         p.textContent = `Message: ${obj.message}`;
         content.appendChild(p);
       }
       
-        // If the object has a list of users, append it to the content
+        // If the object has a list of users, add it to the content
       if(obj.ideas) {
         const userList = document.createElement('p');
         const users = JSON.stringify(obj.ideas);
         userList.textContent = users;
         content.appendChild(userList);
-          /*
+          
           var string = "<div class='grid'>";
+          var i = ""; // empty string to use for loop
           
-          obj.ideas.forEach (function(idea) {
-              var iDea = idea.idea;
-              var cate = idea.category;
+          // each loop will create a 'card' when added
+          for (i in obj.ideas) {
+              var idea = obj.ideas[i].idea;
+              var cate = obj.ideas[i].category;
+              var desc = obj.ideas[i].description;
+              var image = obj.ideas[i].image;
+              var video = obj.ideas[i].video;
               
-              string += "<div class='card'>";
-              string += "<h3>" + idea + "</h3>";
-              string += "<br>" + category;
+              string += "<div class='grid-item'>";
+              string += "<b>Idea: </b>" + idea;
+              string += "<p><b>Category: </b>" + cate + "</p>";
+              string += "<div id='describe'>" + desc + "</div>";
+              if (image) {
+                string += "<img id='contain' src='" + image + "'></iframe>";
+              }
+              if (video) {
+                  string += "<p>" + video + "</p>";
+              }
+              
+              // iframe is restricted to a certain size by YouTube, so it wouldn't
+              // work well with the cards or grid-items based on sizing
+              // string += "<iframe src='" + video + "'>";
+              
               string += "</div>";
-          });
+          }
           
-          string += "</div>"
+          string += "</div>";
           document.querySelector('#content').innerHTML = string;
-          */
       }
     };
 
@@ -53,10 +75,10 @@
               content.innerHTML = `<b>Success</b>`;
               break;
             case 201:
-              content.innerHTML = '<b>Create</b>';
+              content.innerHTML = '<b>Added Idea</b>';
               break;
             case 204: 
-              content.innerHTML = '<b>Updated (No Content)</b>';
+              content.innerHTML = '<b>Updated Idea</b>';
               return;
             case 400:
               content.innerHTML = `<b>Bad Request</b>`;
@@ -73,9 +95,12 @@
       const ideaAction = ideaForm.getAttribute('action');
       const ideaMethod = ideaForm.getAttribute('method');
       
+        // Grabbing values from each part of the idea from
       const ideaField = ideaForm.querySelector('#nameField');
       const categoryField = ideaForm.querySelector('#ideaField');
-        const descriptionField = ideaForm.querySelector('#descField');
+      const descriptionField = ideaForm.querySelector('#descField');
+      const imageField = ideaForm.querySelector('#imgField');
+      const videoField = ideaForm.querySelector('#vidField');
       
       const xhr = new XMLHttpRequest();
       xhr.open(ideaMethod, ideaAction);
@@ -85,7 +110,7 @@
       
       xhr.onload = () => handleResponse(xhr);
       
-      const formData = `idea=${ideaField.value}&category=${categoryField.value}&description=${descriptionField.value}`;
+      const formData = `idea=${ideaField.value}&category=${categoryField.value}&description=${descriptionField.value}&image=${imageField.value}&video=${videoField.value}`;
       
       xhr.send(formData);
     
@@ -123,34 +148,77 @@
     window.onload = init;
 
   </script>
+    
+    <!-- Additional JavaScript to create better interacton with the site -->
+    <script type="text/javascript">
+        // function that changes the background
+        function bg_change(){
+            var i = document.getElementById('background');
+            var val = i.options[i.selectedIndex].value;
+            
+            if (val == "1"){
+                document.body.style.backgroundImage = "linear-gradient(to bottom right, #8360c3, #2ebf91)";
+                document.body.style.backgroundAttachment = "fixed";
+            } else if (val == "2") {
+                document.body.style.backgroundImage = "linear-gradient(to bottom right, #f12711, #f5af19)";
+                document.body.style.backgroundAttachment = "fixed";
+            } else if (val == "3") {
+                document.body.style.backgroundImage = "linear-gradient(to bottom right, #11998e, #38ef7d)";
+                document.body.style.backgroundAttachment = "fixed";
+            }
+        }
+        
+        // function that hides/displays advanced options
+        function toggle_visibility(id) {
+            var e = document.getElementById(id);
+            if (e.style.display == 'block'){
+                e.style.display = 'none';
+            } else {
+                e.style.display = 'block';
+            }
+        }
+        
+        // function that shows content when submit button is clicked
+        function show_content(id) {
+            var element = document.getElementById(id);
+            element.scrollIntoView();
+        }
+    </script>
     <meta charset="utf-8">
 </head>
 <body>
   <section id="top">
-    <h3>JOTDOWN</h3>
+    <div id="title">JOTDOWN</div>
+      <div id="theme">
+          <label for="bg">Color: </label>
+          <select onchange="bg_change()" id="background">
+              <option value="1">Kye Meh</option>
+              <option value="2">Flare</option>
+              <option value="3">Quepal</option>
+          </select>
+      </div>
       <br>
-    <form id="ideaForm" action="/addIdea" method="post">
-      <label for="name">Idea: </label>
-      <input id="nameField" type="text" name="idea" />
-        <br>
-      <label for="category">Category: </label>
-        <input id="ideaField" type="text" name="category" />
-        <br>
-        <label for="description">Description: </label>
-        <br>
-        <input id="descField" type="text" name="description" />
-        <br>
-        <label for="image">Image URL: </label>
-        <input id="imgField" type="text" name="image" />
-        <br>
-        <label for="video">YouTube Link: </label>
-        <input id="vidField" type="text" name="video" />
-        <br>
-      <input type="submit" value="Add Idea" />
-    </form>
+      <div class="container">
+        <form id="ideaForm" action="/addIdea" method="post">
+          <label for="name">Idea: </label> (to update an idea, just use the same idea name and change the rest)
+          <br><input id="nameField" type="text" name="idea" placeholder="Your idea..."/>
+          <br><label for="category">Category: </label>
+            <br><input id="ideaField" type="text" name="category" placeholder="Type of category..."/>
+            <br><label for="description">Description: </label>
+            <br><textarea id="descField" name="description" placeholder="Write a description of your idea..."></textarea>
+            <br><a href="#" onclick="toggle_visibility('advanced')">Advanced Options</a>
+            <div id="advanced">
+                <label for="image">Image URL: </label>
+                <input id="imgField" type="text" name="image" placeholder="Right-click on image > Copy image address"/>
+                <br><label for="video">YouTube Link: </label>
+                <input id="vidField" type="text" name="video" placeholder="Copy and paste YouTube URL"/>
+            </div>
+          <br><input type="submit" value="Add Idea" onclick="show_content('content')" />
+        </form>
+      </div>
       <br>
     <form id="inputForm" action="/getIdeas" method="get">
-      <input type="submit" value="Click to see your ideas!" />
+      <input type="submit" value="Click to see your ideas!" onclick="show_content('content')" />
     </form>
   </section>
   <section id="content">

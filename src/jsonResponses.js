@@ -1,4 +1,4 @@
-const ideas = {};
+const ideas = {}; // empty object for ideas
 
 const respondJSON = (request, response, status, object) => {
   response.writeHead(status, { 'Content-Type': 'application/json' });
@@ -11,6 +11,7 @@ const respondJSONMeta = (request, response, status) => {
   response.end();
 };
 
+// Gets json responses and displays them
 const getIdeas = (request, response) => {
   const responseJSON = {
     ideas,
@@ -24,10 +25,10 @@ const headUsers = (request, response) => respondJSONMeta(request, response, 200)
 // Function that handles adding users, and responds if nothing is added
 const addIdea = (request, response, body) => {
   const responseJSON = {
-    message: 'Idea and category are both required.',
+    message: 'Idea, category, and description are both required.',
   };
 
-  if (!body.idea || !body.category) {
+  if (!body.idea || !body.category || !body.description) {
     responseJSON.id = 'missingParams';
     return respondJSON(request, response, 400, responseJSON);
   }
@@ -43,6 +44,8 @@ const addIdea = (request, response, body) => {
   ideas[body.idea].idea = body.idea;
   ideas[body.idea].category = body.category;
   ideas[body.idea].description = body.description;
+  ideas[body.idea].image = body.image;
+  ideas[body.idea].video = body.video;
 
   if (responseCode === 201) {
     responseJSON.message = 'Created Successfully';
